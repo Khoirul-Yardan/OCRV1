@@ -1,0 +1,481 @@
+<!-- File: templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OCR Produk Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1200px;
+    }
+    .chat-box {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f9f9f9;
+      margin-bottom: 10px;
+    }
+    img#preview {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      margin: 20px auto;
+      display: none;
+      border-radius: 12px;
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background-color: #28a745;
+      cursor: pointer;
+    }
+    button:hover { background-color: #218838; }
+    button.cancel { background-color: #dc3545; }
+    button.cancel:hover { background-color: #c82333; }
+    .produk-item {
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <!-- Chatbot -->
+      <div class="col-md-4 d-flex align-items-start mb-4 mb-md-0">
+        <div class="card w-100">
+          <div class="card-body">
+            <h5 class="card-title text-center">Chatbot AI</h5>
+            <div id="chatMessages" class="chat-box"></div>
+            <input type="text" id="chatInput" class="form-control mt-2" placeholder="Tanya harga atau fitur..." onkeydown="if(event.key==='Enter') sendChat()" />
+            <button class="btn btn-primary mt-2 w-100" onclick="sendChat()">Kirim</button>
+          </div>
+        </div>
+      </div>
+      <!-- OCR Produk Scanner -->
+      <div class="col-md-4 mb-4 mb-md-0">
+        <h1 class="text-center mb-4">OCR Produk Scanner</h1>
+        <div class="mb-2 d-flex gap-2">
+          <button class="btn btn-outline-primary flex-fill" type="button" onclick="chooseFile()">Pilih File</button>
+          <button class="btn btn-outline-secondary flex-fill" type="button" onclick="openCamera()">Kamera</button>
+        </div>
+        <input type="file" accept="image/*" id="imageInput" class="form-control mb-2" style="display:none" />
+        <video id="cameraStream" width="100%" style="display:none; border-radius:12px; margin-bottom:10px;" autoplay></video>
+        <canvas id="cameraCanvas" style="display:none;"></canvas>
+        <button id="captureBtn" class="btn btn-success w-100 mb-2" style="display:none" type="button" onclick="capturePhoto()">Ambil Foto</button>
+        <img id="preview" src="#" alt="Preview" />
+        <button class="btn btn-success w-100 mb-3" onclick="sendToOCR()">Proses OCR</button>
+        <div id="result" style="display: none;">
+          <label for="namaProduk">Nama Produk</label>
+          <input type="text" id="namaProduk" class="form-control" />
+          <label for="hargaBeli">Harga Beli</label>
+          <input type="number" id="hargaBeli" class="form-control" />
+          <label for="hargaJual">Harga Jual</label>
+          <input type="number" id="hargaJual" class="form-control" />
+          <label for="barcode">Barcode</label>
+          <input type="text" id="barcode" class="form-control" />
+          <div class="button-group">
+            <button onclick="saveData()">Simpan</button>
+            <button class="cancel" onclick="cancelData()">Batal</button>
+          </div>
+        </div>
+        <div id="editModal" style="display: none; margin-top: 30px;">
+          <h2>Edit Produk</h2>
+          <label for="editNama">Nama Produk</label>
+          <input type="text" id="editNama" class="form-control" />
+          <label for="editBeli">Harga Beli</label>
+          <input type="number" id="editBeli" class="form-control" />
+          <label for="editJual">Harga Jual</label>
+          <input type="number" id="editJual" class="form-control" />
+          <label for="editBarcode">Barcode</label>
+          <input type="text" id="editBarcode" class="form-control" />
+          <div class="button-group">
+            <button onclick="submitEdit()">Simpan Perubahan</button>
+            <button class="cancel" onclick="cancelEdit()">Batal</button>
+          </div>
+        </div>
+      </div>
+      <!-- Export & Daftar Produk -->
+      <div class="col-md-4 d-flex align-items-start">
+        <div class="w-100">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title">Export Data</h5>
+              <div class="d-grid gap-2">
+                <a href="/export/json" class="btn btn-success" target="_blank">Export ke JSON</a>
+                <a href="/export/csv" class="btn btn-success" target="_blank">Export ke CSV</a>
+                <a href="/export/excel" class="btn btn-success" target="_blank">Export ke Excel</a>
+                <a href="/api/produk" class="btn btn-outline-primary" target="_blank">Lihat API JSON</a>
+              </div>
+            </div>
+          </div>
+          <h2 class="text-center">Daftar Produk Tersimpan</h2>
+          <div id="produkList"></div>
+          <button id="lihatSemuaBtn" class="btn btn-primary w-100 mt-2" style="display:none" onclick="showAllProduk()">Lihat Semua</button>
+
+          <!-- Modal Bootstrap untuk daftar produk lengkap -->
+          <div class="modal fade" id="allProdukModal" tabindex="-1" aria-labelledby="allProdukModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="allProdukModalLabel">Semua Produk Tersimpan</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                  <input type="text" id="searchProduk" class="form-control mb-3" placeholder="Cari nama/barcode produk..." oninput="filterProdukTable()" />
+                  <div id="allProdukList"></div>
+                  <nav>
+                    <ul class="pagination justify-content-center mt-3" id="produkPagination"></ul>
+                  </nav>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Script gabungan -->
+  <script>
+    // Chatbot
+    function sendChat() {
+      const input = document.getElementById("chatInput");
+      const message = input.value.trim();
+      if (!message) return;
+      const chatBox = document.getElementById("chatMessages");
+      chatBox.innerHTML += `<div><strong>Kamu:</strong> ${message}</div>`;
+      fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: message }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        chatBox.innerHTML += `<div><strong>Bot:</strong> ${data.answer}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+      input.value = "";
+    }
+
+    // OCR & Produk
+    let imageBase64 = "";
+    let editIndex = null;
+
+    function chooseFile() {
+      document.getElementById('imageInput').click();
+    }
+
+    function openCamera() {
+      const video = document.getElementById('cameraStream');
+      const captureBtn = document.getElementById('captureBtn');
+      const preview = document.getElementById('preview');
+      preview.style.display = "none";
+      document.getElementById('imageInput').value = "";
+      video.style.display = "block";
+      captureBtn.style.display = "block";
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+        });
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('cameraStream');
+      const canvas = document.getElementById('cameraCanvas');
+      const preview = document.getElementById('preview');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL('image/png');
+      imageBase64 = dataUrl;
+      preview.src = dataUrl;
+      preview.style.display = "block";
+      // Stop camera
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+      video.style.display = "none";
+      document.getElementById('captureBtn').style.display = "none";
+    }
+
+    document.getElementById("imageInput").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imageBase64 = e.target.result;
+        document.getElementById("preview").src = imageBase64;
+        document.getElementById("preview").style.display = "block";
+        document.getElementById('cameraStream').style.display = "none";
+        document.getElementById('captureBtn').style.display = "none";
+      };
+      if (file) reader.readAsDataURL(file);
+    });
+
+    function sendToOCR() {
+      fetch("/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageBase64 }),
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        document.getElementById("result").style.display = "block";
+        document.getElementById("namaProduk").value = data.nama;
+        document.getElementById("hargaBeli").value = data.hargaBeli;
+        document.getElementById("hargaJual").value = data.hargaJual;
+        document.getElementById("barcode").value = data.barcode;
+      });
+    }
+
+    function saveData() {
+      const data = {
+        nama: document.getElementById("namaProduk").value,
+        hargaBeli: document.getElementById("hargaBeli").value,
+        hargaJual: document.getElementById("hargaJual").value,
+        barcode: document.getElementById("barcode").value,
+      };
+      fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      .then(() => {
+        alert("Data disimpan!");
+        loadProdukList();
+        document.getElementById("result").style.display = "none";
+        document.getElementById("preview").style.display = "none";
+      });
+    }
+
+    function cancelData() {
+      document.getElementById("result").style.display = "none";
+    }
+
+    function loadProdukList() {
+      fetch("/produk")
+        .then(res => res.json())
+        .then(produkList => {
+          const container = document.getElementById("produkList");
+          const lihatSemuaBtn = document.getElementById("lihatSemuaBtn");
+          container.innerHTML = "";
+          console.log("Jumlah produk:", produkList.length); // Debug
+          if (produkList.length === 0) {
+            container.innerHTML = "<p>Belum ada produk.</p>";
+            lihatSemuaBtn.style.display = "none";
+            return;
+          }
+          // Tampilkan 2 produk terbaru (dari belakang)
+          const terbaru = produkList.slice(-2).reverse();
+          terbaru.forEach((p, i) => {
+            const div = document.createElement("div");
+            div.classList.add("produk-item");
+            div.innerHTML = `
+              <strong>Produk ${produkList.length - i}</strong><br>
+              Nama: ${p.nama}<br>
+              Harga Beli: Rp ${p.hargaBeli}<br>
+              Harga Jual: Rp ${p.hargaJual}<br>
+              Barcode: ${p.barcode}<br>
+              <div class="button-group" style="margin-top:10px;">
+                <button onclick="editProduk(${produkList.length - 1 - i})">Edit</button>
+                <button class="cancel" onclick="deleteProduk(${produkList.length - 1 - i})">Hapus</button>
+              </div>
+            `;
+            container.appendChild(div);
+          });
+          // Tampilkan tombol lihat semua jika produk lebih dari 2
+          if (produkList.length > 2) {
+            lihatSemuaBtn.style.display = "block";
+          } else {
+            lihatSemuaBtn.style.display = "none";
+          }
+        });
+    }
+
+    function editProduk(index) {
+      fetch("/produk")
+        .then(res => res.json())
+        .then(data => {
+          const p = data[index];
+          editIndex = index;
+          document.getElementById("editNama").value = p.nama;
+          document.getElementById("editBeli").value = p.hargaBeli;
+          document.getElementById("editJual").value = p.hargaJual;
+          document.getElementById("editBarcode").value = p.barcode;
+          document.getElementById("editModal").style.display = "block";
+          document.getElementById("editModal").scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    function submitEdit() {
+      const updated = {
+        nama: document.getElementById("editNama").value,
+        hargaBeli: document.getElementById("editBeli").value,
+        hargaJual: document.getElementById("editJual").value,
+        barcode: document.getElementById("editBarcode").value,
+      };
+      fetch(`/update/${editIndex}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      })
+      .then(() => {
+        alert("Data diperbarui!");
+        cancelEdit();
+        loadProdukList();
+      });
+    }
+
+    function deleteProduk(index) {
+      if (confirm("Yakin ingin menghapus produk ini?")) {
+        fetch(`/delete/${index}`, {
+          method: "DELETE",
+        })
+        .then(() => {
+          alert("Produk dihapus.");
+          loadProdukList();
+        });
+      }
+    }
+
+    function cancelEdit() {
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    let allProdukData = [];
+    let produkPage = 1;
+    const produkPerPage = 10;
+    let produkSearch = "";
+
+    function showAllProduk() {
+      fetch("/produk")
+        .then(res => res.json())
+        .then(produkList => {
+          allProdukData = produkList.slice().reverse(); // No 1 = terbaru
+          produkPage = 1;
+          produkSearch = "";
+          document.getElementById("searchProduk").value = "";
+          renderProdukTable();
+          var modal = new bootstrap.Modal(document.getElementById('allProdukModal'));
+          modal.show();
+        });
+    }
+
+    function renderProdukTable() {
+      let filtered = allProdukData.filter(p =>
+        (!produkSearch || p.nama.toLowerCase().includes(produkSearch) || (p.barcode && p.barcode.toLowerCase().includes(produkSearch)))
+      );
+      const total = filtered.length;
+      const start = (produkPage - 1) * produkPerPage;
+      const end = start + produkPerPage;
+      const pageData = filtered.slice(start, end);
+
+      let html = `
+        <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Harga Beli</th>
+              <th>Harga Jual</th>
+              <th>Barcode</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      if (pageData.length === 0) {
+        html += `<tr><td colspan="6" class="text-center">Tidak ada produk.</td></tr>`;
+      } else {
+        pageData.forEach((p, i) => {
+          html += `
+            <tr>
+              <td>${start + i + 1}</td>
+              <td>${p.nama}</td>
+              <td>Rp ${p.hargaBeli}</td>
+              <td>Rp ${p.hargaJual}</td>
+              <td>${p.barcode}</td>
+              <td>
+                <button onclick="editProduk(${allProdukData.indexOf(p)})" data-bs-dismiss="modal" class="btn btn-sm btn-primary">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteProduk(${allProdukData.indexOf(p)})" data-bs-dismiss="modal">Hapus</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+      html += `
+          </tbody>
+        </table>
+        </div>
+      `;
+      document.getElementById("allProdukList").innerHTML = html;
+      renderProdukPagination(filtered.length);
+    }
+
+    function renderProdukPagination(total) {
+      const totalPages = Math.ceil(total / produkPerPage);
+      const pag = document.getElementById("produkPagination");
+      pag.innerHTML = "";
+      if (totalPages <= 1) return;
+      let prev = `<li class="page-item${produkPage === 1 ? ' disabled' : ''}">
+        <button class="page-link" onclick="gotoProdukPage(${produkPage - 1})">Prev</button></li>`;
+      pag.innerHTML += prev;
+      for (let i = 1; i <= totalPages; i++) {
+        pag.innerHTML += `<li class="page-item${produkPage === i ? ' active' : ''}">
+          <button class="page-link" onclick="gotoProdukPage(${i})">${i}</button></li>`;
+      }
+      let next = `<li class="page-item${produkPage === totalPages ? ' disabled' : ''}">
+        <button class="page-link" onclick="gotoProdukPage(${produkPage + 1})">Next</button></li>`;
+      pag.innerHTML += next;
+    }
+
+    function gotoProdukPage(page) {
+      produkPage = page;
+      renderProdukTable();
+    }
+
+    function filterProdukTable() {
+      produkSearch = document.getElementById("searchProduk").value.trim().toLowerCase();
+      produkPage = 1;
+      renderProdukTable();
+    }
+
+    window.onload = loadProdukList;
+  </script>
+</body>
+</html>

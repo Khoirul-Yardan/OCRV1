@@ -8,6 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Tambahkan SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -73,14 +75,23 @@
 <body>
   <div class="container">
     <div class="row">
-      <!-- Chatbot -->
-      <div class="col-md-4 d-flex align-items-start mb-4 mb-md-0">
+      <!-- Chatbot & Barcode -->
+      <div class="col-md-4 mb-4 mb-md-0 d-flex flex-column gap-3">
         <div class="card w-100">
           <div class="card-body">
             <h5 class="card-title text-center">Chatbot AI</h5>
             <div id="chatMessages" class="chat-box"></div>
             <input type="text" id="chatInput" class="form-control mt-2" placeholder="Tanya harga atau fitur..." onkeydown="if(event.key==='Enter') sendChat()" />
             <button class="btn btn-primary mt-2 w-100" onclick="sendChat()">Kirim</button>
+          </div>
+        </div>
+        <!-- Input Barcode Open Food Facts -->
+        <div class="card w-100">
+          <div class="card-body">
+            <h5 class="card-title text-center">Input Barcode Produk</h5>
+            <p class="text-center">Catatan : Hanya untuk Produk Makanan</p>
+            <input type="text" id="barcodeInputOFF" class="form-control mb-2" placeholder="Scan atau ketik barcode..." onkeydown="if(event.key==='Enter') fetchBarcodeOFF()" />
+            <button class="btn btn-warning w-100" onclick="fetchBarcodeOFF()">Ambil Data Produk</button>
           </div>
         </div>
       </div>
@@ -130,6 +141,8 @@
       <!-- Export & Daftar Produk -->
       <div class="col-md-4 d-flex align-items-start">
         <div class="w-100">
+          <!-- Tambahkan tombol Pusat Informasi di sini -->
+          <button class="btn btn-info w-100 mb-3" onclick="showInfo()">Pusat Informasi</button>
           <div class="card mb-4">
             <div class="card-body">
               <h5 class="card-title">Export Data</h5>
@@ -473,6 +486,57 @@
       produkSearch = document.getElementById("searchProduk").value.trim().toLowerCase();
       produkPage = 1;
       renderProdukTable();
+    }
+
+    // Fungsi untuk menampilkan pusat informasi
+    function showInfo() {
+      Swal.fire({
+        title: 'Pusat Informasi',
+        html: `
+          <b>OCR Produk Scanner</b><br>
+          Aplikasi ini memudahkan Anda untuk memindai produk menggunakan OCR (Optical Character Recognition), menyimpan data produk, mengedit, menghapus, serta mengekspor data ke berbagai format.<br><br>
+          <ul style="text-align:left;">
+            <li>Scan produk via kamera atau upload gambar.</li>
+            <li>Chatbot AI untuk tanya harga/fitur produk.</li>
+            <li>Data produk dapat diekspor ke JSON, CSV, atau Excel.</li>
+            <li>Edit & hapus produk langsung dari daftar.</li>
+          </ul>
+          <small>Versi: 1.0 &copy; 2025</small>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Tutup'
+      });
+    }
+
+    // Ambil data produk dari Open Food Facts berdasarkan barcode
+    function fetchBarcodeOFF() {
+      const barcode = document.getElementById("barcodeInputOFF").value.trim();
+      if (!barcode) {
+        Swal.fire("Barcode kosong!", "Silakan masukkan barcode produk.", "warning");
+        return;
+      }
+      Swal.showLoading();
+      fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`)
+        .then(res => res.json())
+        .then(data => {
+          Swal.close();
+          if (data.status === 1) {
+            // Data produk ditemukan, isi form edit sebelum simpan
+            document.getElementById("result").style.display = "block";
+            document.getElementById("namaProduk").value = data.product.product_name || "";
+            document.getElementById("hargaBeli").value = "";
+            document.getElementById("hargaJual").value = "";
+            document.getElementById("barcode").value = barcode;
+            document.getElementById("preview").style.display = "none";
+            Swal.fire("Berhasil!", "Data produk ditemukan. Silakan lengkapi harga lalu simpan.", "success");
+          } else {
+            Swal.fire("Tidak ditemukan", "Produk dengan barcode tersebut tidak ada di database Open Food Facts.", "error");
+          }
+        })
+        .catch(() => {
+          Swal.close();
+          Swal.fire("Gagal", "Tidak dapat mengambil data produk.", "error");
+        });
     }
 
     window.onload = loadProdukList;

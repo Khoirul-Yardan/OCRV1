@@ -192,6 +192,57 @@
       if (!message) return;
       const chatBox = document.getElementById("chatMessages");
       chatBox.innerHTML += `<div><strong>Kamu:</strong> ${message}</div>`;
+
+      // Deteksi pertanyaan harga
+      if (/harga|rekomendasi harga/i.test(message)) {
+        // Jika ada gambar, gunakan OCR+Gemini
+        if (imageBase64) {
+          Swal.showLoading();
+          fetch("/chat-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imageBase64, daerah: chatbotDaerah || "Jakarta" })
+          })
+          .then(res => res.json())
+          .then(data => {
+            Swal.close();
+            if (data.nama) {
+              chatBox.innerHTML += `<div><strong>Bot:</strong> Nama: ${data.nama}<br>Harga Beli: Rp ${data.hargaBeli}<br>Harga Jual: Rp ${data.hargaJual}</div>`;
+              document.getElementById("result").style.display = "block";
+              document.getElementById("namaProduk").value = data.nama;
+              document.getElementById("hargaBeli").value = data.hargaBeli;
+              document.getElementById("hargaJual").value = data.hargaJual;
+              document.getElementById("barcode").value = data.barcode;
+            } else {
+              chatBox.innerHTML += `<div><strong>Bot:</strong> Maaf, tidak bisa mendapatkan rekomendasi harga dari gambar.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+          });
+        } else {
+          // Cek produk.json
+          fetch("/produk")
+            .then(res => res.json())
+            .then(produkList => {
+              let found = null;
+              for (let p of produkList) {
+                if (message.toLowerCase().includes(p.nama.toLowerCase())) {
+                  found = p;
+                  break;
+                }
+              }
+              if (found) {
+                chatBox.innerHTML += `<div><strong>Bot:</strong> Nama: ${found.nama}<br>Harga Beli: Rp ${found.hargaBeli}<br>Harga Jual: Rp ${found.hargaJual}</div>`;
+              } else {
+                chatBox.innerHTML += `<div><strong>Bot:</strong> Maaf, produk tidak ditemukan di database. Silakan gunakan fitur OCR atau barcode.</div>`;
+              }
+              chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+        input.value = "";
+        return;
+      }
+
+      // Default: tanya ke Gemini
       fetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -272,6 +323,12 @@
         document.getElementById("hargaBeli").value = data.hargaBeli;
         document.getElementById("hargaJual").value = data.hargaJual;
         document.getElementById("barcode").value = data.barcode;
+
+        // Tampilkan ke chatbot AI
+        const chatBox = document.getElementById("chatMessages");
+        chatBox.innerHTML += `<div><strong>Kamu:</strong> Saya scan produk: ${data.nama}</div>`;
+        chatBox.innerHTML += `<div><strong>Bot:</strong> Rekomendasi harga untuk <b>${data.nama}</b>:<br>Harga Beli: Rp ${data.hargaBeli}<br>Harga Jual: Rp ${data.hargaJual}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
 
@@ -539,7 +596,38 @@
         });
     }
 
-    window.onload = loadProdukList;
+    let chatbotDaerah = null;
+
+    window.onload = function() {
+      loadProdukList();
+      setTimeout(() => {
+        const chatBox = document.getElementById("chatMessages");
+        chatBox.innerHTML += `<div><strong>Bot:</strong> Hai! Di daerah mana anda sekarang?</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+        Swal.fire({
+          title: "Daerah Anda?",
+          input: "text",
+          inputLabel: "Masukkan nama daerah Anda",
+          inputPlaceholder: "Contoh: Bandung",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          confirmButtonText: "Kirim",
+          preConfirm: (daerah) => {
+            if (!daerah) {
+              Swal.showValidationMessage("Daerah tidak boleh kosong!");
+            }
+            return daerah;
+          }
+        }).then((result) => {
+          if (result.isConfirmed && result.value) {
+            chatbotDaerah = result.value;
+            chatBox.innerHTML += `<div><strong>Kamu:</strong> ${chatbotDaerah}</div>`;
+            chatBox.innerHTML += `<div><strong>Bot:</strong> Terima kasih! Silakan tanya produk atau harga, atau gunakan fitur OCR/Barcode.</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+          }
+        });
+      }, 500);
+    };
   </script>
 </body>
 </html>

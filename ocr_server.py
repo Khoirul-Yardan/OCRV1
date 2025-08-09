@@ -40,7 +40,7 @@ def get_price_estimate_gemini(nama_produk, daerah="Jakarta"):
     Harga jual harus lebih tinggi dari harga beli (margin 10-30%).
     """
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-pro")
         response = model.generate_content(prompt)
         text = response.text.strip()
         # Coba cari JSON di dalam text

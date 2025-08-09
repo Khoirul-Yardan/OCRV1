@@ -16,5 +16,11 @@
         "hargaBeli": "11206",
         "hargaJual": "20320",
         "barcode": "BR942474"
+    },
+    {
+        "nama": "Perly",
+        "hargaBeli": "10000",
+        "hargaJual": "12000",
+        "barcode": "6111242100992"
     }
 ]

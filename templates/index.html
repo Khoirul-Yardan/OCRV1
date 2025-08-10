@@ -312,6 +312,20 @@
     });
 
     function sendToOCR() {
+      let loadingText = exportFormat === "mokapos"
+        ? "Memproses OCR untuk format MokaPos. Mohon tunggu sebentar."
+        : "Memproses OCR. Mohon tunggu sebentar.";
+
+      Swal.fire({
+        title: 'Memproses OCR...',
+        text: loadingText,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       fetch("/ocr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -319,17 +333,33 @@
       })
       .then((res) => res.json())
       .then((data) => {
+        Swal.close();
+        renderProductForm(); // Pastikan form sesuai format
         document.getElementById("result").style.display = "block";
-        document.getElementById("namaProduk").value = data.nama;
-        document.getElementById("hargaBeli").value = data.hargaBeli;
-        document.getElementById("hargaJual").value = data.hargaJual;
-        document.getElementById("barcode").value = data.barcode;
+
+        // Isi field sesuai format
+        if (exportFormat === "mokapos") {
+          document.getElementById("namaProduk").value = data.nama || "";
+          document.getElementById("skuProduk").value = data.barcode || "";
+          document.getElementById("hargaBeli").value = data.hargaBeli || "";
+          document.getElementById("hargaJual").value = data.hargaJual || "";
+          // Field lain biarkan user lengkapi
+        } else {
+          document.getElementById("namaProduk").value = data.nama || "";
+          document.getElementById("barcode").value = data.barcode || "";
+          document.getElementById("hargaBeli").value = data.hargaBeli || "";
+          document.getElementById("hargaJual").value = data.hargaJual || "";
+        }
 
         // Tampilkan ke chatbot AI
         const chatBox = document.getElementById("chatMessages");
-        chatBox.innerHTML += `<div><strong>Kamu:</strong> Saya scan produk: ${data.nama}</div>`;
-        chatBox.innerHTML += `<div><strong>Bot:</strong> Rekomendasi harga untuk <b>${data.nama}</b>:<br>Harga Beli: Rp ${data.hargaBeli}<br>Harga Jual: Rp ${data.hargaJual}</div>`;
+        chatBox.innerHTML += `<div><strong>Kamu:</strong> Saya scan produk: ${data.nama || '(tidak terdeteksi)'}</div>`;
+        chatBox.innerHTML += `<div><strong>Bot:</strong> Rekomendasi harga untuk <b>${data.nama || '(tidak terdeteksi)'}</b>:<br>Harga Beli: Rp ${data.hargaBeli || '-'}<br>Harga Jual: Rp ${data.hargaJual || '-'}</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
+      })
+      .catch(() => {
+        Swal.close();
+        Swal.fire("Gagal", "Terjadi kesalahan saat proses OCR.", "error");
       });
     }
 

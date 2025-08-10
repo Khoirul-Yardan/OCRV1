@@ -6,6 +6,18 @@
         "barcode": "BR181032"
     },
     {
+<<<<<<< HEAD
+        "nama": "Snack Soes Cokelat",
+        "hargaBeli": "11206",
+        "hargaJual": "20320",
+        "barcode": "BR942474"
+    },
+    {
+        "nama": "STaKer 80 2 POWER RGB] PLUS AMD BRonZE YEARS Eland SOQW POwER SUPFLY WwW.enlight-indonesia com",
+        "hargaBeli": "10822",
+        "hargaJual": "13317",
+        "barcode": "BR762855"
+=======
         "nama": "sidiali EAU MIN\u00c9RALE NAT FUr: ! De bien-Etre Source",
         "kategori": "minuman",
         "barcode": "1090732489",
@@ -14,6 +26,7 @@
         "hargaBeli": "32000",
         "hargaJual": "39000",
         "stok": "10"
+<<<<<<< HEAD
     },
     {
         "nama": "LEAG AD CAMPUS KOVEEDIE",
@@ -24,5 +37,8 @@
         "hargaBeli": "1550000",
         "hargaJual": "1850000",
         "stok": "10"
+=======
+>>>>>>> b13b583b21f469a2e7ecb42c177bae60b2bdf18c
+>>>>>>> eb3954491beb334b5e830d50aa2c5cd76f5f1f87
     }
 ]

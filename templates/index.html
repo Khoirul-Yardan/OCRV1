@@ -534,7 +534,11 @@
     // === Bagian Script OCR & Produk ===
     let imageBase64 = "";
     let editIndex = null;
+<<<<<<< HEAD
     let cameraStream = null;
+=======
+    let isEditing = false;
+>>>>>>> b13b583b21f469a2e7ecb42c177bae60b2bdf18c
 
     function chooseFile() {
       document.getElementById('imageInput').click();
@@ -593,6 +597,7 @@
     });
 
     function sendToOCR() {
+<<<<<<< HEAD
       if (!imageBase64) {
         Swal.fire("Gagal!", "Pilih atau ambil foto terlebih dahulu.", "warning");
         return;
@@ -636,10 +641,73 @@
             Swal.fire("Gagal!", "Terjadi kesalahan saat memproses OCR. Silakan coba lagi.", "error");
           });
         }
+=======
+      let loadingText = exportFormat === "mokapos"
+        ? "Memproses OCR untuk format MokaPos. Mohon tunggu sebentar."
+        : "Memproses OCR. Mohon tunggu sebentar.";
+
+      Swal.fire({
+        title: 'Memproses OCR...',
+        text: loadingText,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      fetch("/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageBase64 }),
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        Swal.close();
+        renderProductForm(); // Pastikan form sesuai format
+        document.getElementById("result").style.display = "block";
+
+        // Isi field sesuai format
+        if (exportFormat === "mokapos") {
+          document.getElementById("namaProduk").value = data.nama || "";
+          document.getElementById("skuProduk").value = data.barcode || "";
+          document.getElementById("hargaBeli").value = data.hargaBeli || "";
+          document.getElementById("hargaJual").value = data.hargaJual || "";
+          // Field lain biarkan user lengkapi
+        } else {
+          document.getElementById("namaProduk").value = data.nama || "";
+          document.getElementById("barcode").value = data.barcode || "";
+          document.getElementById("hargaBeli").value = data.hargaBeli || "";
+          document.getElementById("hargaJual").value = data.hargaJual || "";
+        }
+
+        // Tampilkan ke chatbot AI
+        const chatBox = document.getElementById("chatMessages");
+        chatBox.innerHTML += `<div><strong>Kamu:</strong> Saya scan produk: ${data.nama || '(tidak terdeteksi)'}</div>`;
+        chatBox.innerHTML += `<div><strong>Bot:</strong> Rekomendasi harga untuk <b>${data.nama || '(tidak terdeteksi)'}</b>:<br>Harga Beli: Rp ${data.hargaBeli || '-'}<br>Harga Jual: Rp ${data.hargaJual || '-'}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      })
+      .catch(() => {
+        Swal.close();
+        Swal.fire("Gagal", "Terjadi kesalahan saat proses OCR.", "error");
+>>>>>>> b13b583b21f469a2e7ecb42c177bae60b2bdf18c
       });
     }
 
+    function editProduk(index) {
+      fetch("/produk")
+        .then(res => res.json())
+        .then(data => {
+          const p = data[index];
+          editIndex = index;
+          isEditing = true;
+          renderProductForm(p);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
     function saveData() {
+<<<<<<< HEAD
       const data = {
         nama: document.getElementById("namaProduk").value,
         hargaBeli: document.getElementById("hargaBeli").value,
@@ -660,10 +728,63 @@
       .catch(err => {
         Swal.fire("Gagal!", "Terjadi kesalahan saat menyimpan data.", "error");
       });
+=======
+      let data = {};
+      if (exportFormat === "mokapos") {
+        data = {
+          nama: document.getElementById("namaProduk").value,
+          kategori: document.getElementById("kategoriProduk").value,
+          barcode: document.getElementById("skuProduk").value,
+          variant: document.getElementById("variantProduk").value,
+          brand: document.getElementById("brandProduk").value,
+          hargaBeli: document.getElementById("hargaBeli").value,
+          hargaJual: document.getElementById("hargaJual").value,
+          stok: document.getElementById("stokProduk").value
+        };
+      } else {
+        data = {
+          nama: document.getElementById("namaProduk").value,
+          hargaBeli: document.getElementById("hargaBeli").value,
+          hargaJual: document.getElementById("hargaJual").value,
+          barcode: document.getElementById("barcode").value
+        };
+      }
+
+      // Jika sedang edit, update produk
+      if (isEditing && editIndex !== null) {
+        fetch(`/update/${editIndex}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })
+        .then(() => {
+          alert("Data diperbarui!");
+          isEditing = false;
+          editIndex = null;
+          document.getElementById("result").style.display = "none";
+          loadProdukList();
+        });
+      } else {
+        // Tambah produk baru
+        fetch("/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })
+        .then(() => {
+          alert("Data disimpan!");
+          loadProdukList();
+          document.getElementById("result").style.display = "none";
+          document.getElementById("preview").style.display = "none";
+        });
+      }
+>>>>>>> b13b583b21f469a2e7ecb42c177bae60b2bdf18c
     }
 
     function cancelData() {
       document.getElementById("result").style.display = "none";
+      isEditing = false;
+      editIndex = null;
     }
 
     function loadProdukList() {
@@ -707,6 +828,7 @@
         });
     }
 
+<<<<<<< HEAD
     function editProduk(index) {
       fetch("/produk")
         .then(res => res.json())
@@ -744,6 +866,8 @@
       });
     }
 
+=======
+>>>>>>> b13b583b21f469a2e7ecb42c177bae60b2bdf18c
     function deleteProduk(index) {
       Swal.fire({
         title: "Yakin ingin menghapus?",
@@ -767,10 +891,6 @@
           });
         }
       });
-    }
-
-    function cancelEdit() {
-      document.getElementById("editModal").style.display = "none";
     }
 
     let allProdukData = [];
@@ -899,7 +1019,7 @@
     function fetchBarcodeOFF() {
       const barcode = document.getElementById("barcodeInputOFF").value.trim();
       if (!barcode) {
-        Swal.fire("Barcode kosong!", "Silakan masukkan barcode produk.", "warning");
+        Swal.fire("Barcode/SKU kosong!", "Silakan masukkan barcode/SKU produk.", "warning");
         return;
       }
       Swal.showLoading();
@@ -909,14 +1029,20 @@
           Swal.close();
           if (data.status === 1) {
             document.getElementById("result").style.display = "block";
-            document.getElementById("namaProduk").value = data.product.product_name || "";
-            document.getElementById("hargaBeli").value = "";
-            document.getElementById("hargaJual").value = "";
-            document.getElementById("barcode").value = barcode;
+            if (exportFormat === "mokapos") {
+              document.getElementById("namaProduk").value = data.product.product_name || "";
+              document.getElementById("kategoriProduk").value = data.product.categories_tags ? data.product.categories_tags[0]?.replace('en:', '') : "";
+              document.getElementById("skuProduk").value = barcode;
+              document.getElementById("variantProduk").value = data.product.brands_tags ? data.product.brands_tags[0] : "";
+              document.getElementById("brandProduk").value = data.product.brands_tags ? data.product.brands_tags[0] : "";
+            } else {
+              document.getElementById("namaProduk").value = data.product.product_name || "";
+              document.getElementById("barcode").value = barcode;
+            }
             document.getElementById("preview").style.display = "none";
             Swal.fire("Berhasil!", "Data produk ditemukan. Silakan lengkapi harga lalu simpan.", "success");
           } else {
-            Swal.fire("Tidak ditemukan", "Produk dengan barcode tersebut tidak ada di database Open Food Facts.", "error");
+            Swal.fire("Tidak ditemukan", "Produk dengan barcode/SKU tersebut tidak ada di database Open Food Facts.", "error");
           }
         })
         .catch(() => {
@@ -926,6 +1052,7 @@
     }
 
     let chatbotDaerah = null;
+    let exportFormat = null;
 
     window.onload = function() {
       loadProdukList();
@@ -933,30 +1060,153 @@
         const chatBox = document.getElementById("chatMessages");
         chatBox.innerHTML += `<div><strong>Bot:</strong> Hai! Di daerah mana anda sekarang?</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
-        Swal.fire({
-          title: "Daerah Anda?",
-          input: "text",
-          inputLabel: "Masukkan nama daerah Anda",
-          inputPlaceholder: "Contoh: Bandung",
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-          confirmButtonText: "Kirim",
-          preConfirm: (daerah) => {
-            if (!daerah) {
-              Swal.showValidationMessage("Daerah tidak boleh kosong!");
+
+        // Daftar kota/kabupaten Indonesia (bisa diperluas)
+        const kotaIndonesia = [
+          "Jakarta", "Bandung", "Surabaya", "Medan", "Semarang", "Makassar", "Palembang", "Bekasi", "Depok", "Tangerang",
+          "Bogor", "Malang", "Padang", "Denpasar", "Yogyakarta", "Balikpapan", "Pekanbaru", "Samarinda", "Pontianak",
+          "Banjarmasin", "Batam", "Manado", "Cirebon", "Solo", "Kediri", "Jambi", "Mataram", "Ambon", "Kupang", "Jayapura", "Lamongan"
+        ];
+        const kotaIndonesiaLower = kotaIndonesia.map(k => k.toLowerCase().replace(/\s+/g, ''));
+
+        function tanyaDaerah() {
+          Swal.fire({
+            title: "Daerah Anda?",
+            input: "text",
+            inputLabel: "Masukkan nama daerah Anda",
+            inputPlaceholder: "Contoh: Bandung",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            confirmButtonText: "Kirim",
+            preConfirm: (daerah) => {
+              if (!daerah) {
+                Swal.showValidationMessage("Daerah tidak boleh kosong!");
+                return false;
+              }
+              const inputLower = daerah.toLowerCase().replace(/\s+/g, '');
+              if (!kotaIndonesiaLower.includes(inputLower)) {
+                Swal.showValidationMessage("Nama daerah tidak valid. Silakan masukkan nama kota/kabupaten di Indonesia dengan benar.");
+                return false;
+              }
+              return daerah;
             }
-            return daerah;
-          }
-        }).then((result) => {
-          if (result.isConfirmed && result.value) {
-            chatbotDaerah = result.value;
-            chatBox.innerHTML += `<div><strong>Kamu:</strong> ${chatbotDaerah}</div>`;
-            chatBox.innerHTML += `<div><strong>Bot:</strong> Terima kasih! Silakan tanya produk atau harga, atau gunakan fitur OCR/Barcode.</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-          }
-        });
+          }).then((result) => {
+            if (result.isConfirmed && result.value) {
+              chatbotDaerah = result.value;
+              chatBox.innerHTML += `<div><strong>Kamu:</strong> ${chatbotDaerah}</div>`;
+              chatBox.innerHTML += `<div><strong>Bot:</strong> Terima kasih! Silakan pilih format data yang ingin digunakan.</div>`;
+              chatBox.scrollTop = chatBox.scrollHeight;
+              tanyaFormat();
+            } else {
+              tanyaDaerah();
+            }
+          });
+        }
+
+        function tanyaFormat() {
+          Swal.fire({
+            title: "Pilih Format Data",
+            input: "select",
+            inputOptions: {
+              "mokapos": "MokaPos",
+              "lainnya": "Format Lainnya"
+            },
+            inputPlaceholder: "Pilih format data",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            confirmButtonText: "Pilih",
+            inputValidator: (value) => {
+              if (!value) {
+                return "Silakan pilih format data!";
+              }
+              return null;
+            }
+          }).then((result) => {
+            if (result.isConfirmed && result.value) {
+              exportFormat = result.value;
+              chatBox.innerHTML += `<div><strong>Kamu:</strong> ${exportFormat === "mokapos" ? "MokaPos" : "Format Lainnya"}</div>`;
+              chatBox.innerHTML += `<div><strong>Bot:</strong> Format <b>${exportFormat === "mokapos" ? "MokaPos" : "Lainnya"}</b> dipilih. Silakan lanjutkan pengisian produk.</div>`;
+              chatBox.scrollTop = chatBox.scrollHeight;
+              renderProductForm();
+            } else {
+              tanyaFormat();
+            }
+          });
+        }
+
+        tanyaDaerah();
       }, 500);
     };
+
+    function renderProductForm(data = {}) {
+      const resultDiv = document.getElementById("result");
+      if (!resultDiv) return;
+
+      if (exportFormat === "mokapos") {
+        resultDiv.innerHTML = `
+          <label for="namaProduk">Items Name (Do Not Edit)</label>
+          <input type="text" id="namaProduk" class="form-control" value="${data.nama || ""}" />
+          <label for="kategoriProduk">Category</label>
+          <input type="text" id="kategoriProduk" class="form-control" value="${data.kategori || ""}" />
+          <label for="skuProduk">SKU</label>
+          <input type="text" id="skuProduk" class="form-control" value="${data.barcode || ""}" />
+          <label for="variantProduk">Variant name</label>
+          <input type="text" id="variantProduk" class="form-control" value="${data.variant || ""}" />
+          <label for="brandProduk">Brand Name</label>
+          <input type="text" id="brandProduk" class="form-control" value="${data.brand || ""}" />
+          <label for="hargaBeli">Cost Amount</label>
+          <input type="number" id="hargaBeli" class="form-control" value="${data.hargaBeli || ""}" />
+          <label for="hargaJual">Basic - Price</label>
+          <input type="number" id="hargaJual" class="form-control" value="${data.hargaJual || ""}" />
+          <label for="stokProduk">In Stock</label>
+          <input type="number" id="stokProduk" class="form-control" value="${data.stok || 10}" />
+          <div class="button-group">
+            <button onclick="saveData()">Simpan</button>
+            <button class="cancel" onclick="cancelData()">Batal</button>
+          </div>
+        `;
+      } else {
+        resultDiv.innerHTML = `
+          <label for="namaProduk">Nama Produk</label>
+          <input type="text" id="namaProduk" class="form-control" value="${data.nama || ""}" />
+          <label for="hargaBeli">Harga Beli</label>
+          <input type="number" id="hargaBeli" class="form-control" value="${data.hargaBeli || ""}" />
+          <label for="hargaJual">Harga Jual</label>
+          <input type="number" id="hargaJual" class="form-control" value="${data.hargaJual || ""}" />
+          <label for="barcode">Barcode</label>
+          <input type="text" id="barcode" class="form-control" value="${data.barcode || ""}" />
+          <div class="button-group">
+            <button onclick="saveData()">Simpan</button>
+            <button class="cancel" onclick="cancelData()">Batal</button>
+          </div>
+        `;
+      }
+      resultDiv.style.display = "block";
+    }
+
+    function renderBarcodeInput() {
+      const card = document.querySelector('.card .card-title.text-center + p')?.parentElement || document.querySelectorAll('.card')[1]?.querySelector('.card-body');
+      if (!card) return;
+
+      if (exportFormat === "mokapos") {
+        card.innerHTML = `
+          <h5 class="card-title text-center">Input SKU Produk</h5>
+          <p class="text-center">Catatan : Hanya untuk Produk Makanan</p>
+          <input type="text" id="barcodeInputOFF" class="form-control mb-2" placeholder="Scan atau ketik SKU..." onkeydown="if(event.key==='Enter') fetchBarcodeOFF()" />
+          <button class="btn btn-warning w-100" onclick="fetchBarcodeOFF()">Ambil Data Produk</button>
+        `;
+      } else {
+        card.innerHTML = `
+          <h5 class="card-title text-center">Input Barcode Produk</h5>
+          <p class="text-center">Catatan : Hanya untuk Produk Makanan</p>
+          <input type="text" id="barcodeInputOFF" class="form-control mb-2" placeholder="Scan atau ketik barcode..." onkeydown="if(event.key==='Enter') fetchBarcodeOFF()" />
+          <button class="btn btn-warning w-100" onclick="fetchBarcodeOFF()">Ambil Data Produk</button>
+        `;
+      }
+    }
+
+    renderProductForm();
+    renderBarcodeInput();
   </script>
 </body>
 </html>

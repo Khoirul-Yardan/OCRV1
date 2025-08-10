@@ -1,26 +1,22 @@
 [
     {
-        "nama": "Snack Soes Cokelat",
-        "hargaBeli": "9684",
-        "hargaJual": "28047",
-        "barcode": "BR181032"
-    },
-    {
-        "nama": "Snack Soes Cokelat",
-        "hargaBeli": "11206",
-        "hargaJual": "20320",
-        "barcode": "BR942474"
-    },
-    {
-        "nama": "sidiali EAU MIN\u00c9RALE NAT ",
-        "hargaBeli": "2200",
-        "hargaJual": "2700",
-        "barcode": "BR634490"
+        "nama": "cheetos JAGUNO Rasa BAKAT RoaSTED ( FLAVOR 0",
+        "kategori": "jajan",
+        "barcode": "BR690602",
+        "variant": "jagung bakar",
+        "brand": "cheetos",
+        "hargaBeli": "6500",
+        "hargaJual": "10000",
+        "stok": "10"
     },
     {
         "nama": "Perly",
-        "hargaBeli": "2200",
-        "hargaJual": "2700",
-        "barcode": "6111242100992"
+        "kategori": "dairies",
+        "barcode": "6111242100992",
+        "variant": "jaouda",
+        "brand": "jaouda",
+        "hargaBeli": "6500",
+        "hargaJual": "10000",
+        "stok": "10"
     }
 ]

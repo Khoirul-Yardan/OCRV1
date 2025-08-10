@@ -329,15 +329,7 @@
       border-radius: 10px;
       margin-bottom: 10px;
     }
-    .ocr-btn-fixed {
-  position: absolute;
-  bottom: 20px; /* jarak dari bawah card */
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 40px); /* agar tidak nempel tepi */
-  z-index: 10;
-}
-
+    
   </style>
 </head>
 <body>
@@ -396,8 +388,7 @@
           <canvas id="cameraCanvas" style="display:none;"></canvas>
           <button id="captureBtn" class="btn btn-success w-100 mb-3" style="display:none" type="button" onclick="capturePhoto()">Ambil Foto</button>
           <img id="preview" src="#" alt="Preview" />
-            <button class="btn btn-success ocr-btn-fixed " id="btnProsesOCR" onclick="sendToOCR()">Proses OCR</button>
-
+          <button class="btn btn-success w-100 mb-3" onclick="sendToOCR()">Proses OCR</button>
           <div id="result" style="display: none;">
             <div class="mb-3">
               <label for="namaProduk" class="form-label">Nama Produk</label>
@@ -1075,7 +1066,7 @@
 
       if (exportFormat === "mokapos") {
         resultDiv.innerHTML = `
-          <label for="namaProduk">Items Name (Do Not Edit)</label>
+          <label for="namaProduk">Items Name </label>
           <input type="text" id="namaProduk" class="form-control" value="${data.nama || ""}" />
           <label for="kategoriProduk">Category</label>
           <input type="text" id="kategoriProduk" class="form-control" value="${data.kategori || ""}" />

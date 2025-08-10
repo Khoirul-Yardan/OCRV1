@@ -12,11 +12,270 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary-color: #4A90E2;
+      --secondary-color: #50E3C2;
+      --background-light: #f7f9fc;
+      --background-dark: #e0eafc;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-light: #666;
+      --box-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.05);
+      --box-shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      background: var(--background-dark);
+      color: var(--text-dark);
       min-height: 100vh;
-      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background: var(--card-bg);
+      box-shadow: var(--box-shadow-light);
+      padding: 0.5rem 1rem;
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--primary-color) !important;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .container-fluid {
+      padding: 20px;
+      flex-grow: 1;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 1rem;
+      box-shadow: var(--box-shadow-light);
+      transition: all 0.3s ease;
+      background-color: var(--card-bg);
+    }
+    
+    .card:hover {
+      box-shadow: var(--box-shadow-medium);
+      transform: translateY(-5px);
+    }
+
+    .card-title {
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .chat-box {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      padding: 15px;
+      border-radius: 0.75rem;
+      background: var(--background-light);
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-box div {
+      padding: 8px 12px;
+      border-radius: 12px;
+    }
+    .chat-box div strong {
+      font-weight: 600;
+    }
+
+    .chat-box div:nth-child(even) {
+      background-color: #e0f2f1; /* Bot */
+      align-self: flex-start;
+      border-top-left-radius: 0;
+    }
+    
+    .chat-box div:nth-child(odd) {
+      background-color: #e8f5e9; /* User */
+      align-self: flex-end;
+      border-top-right-radius: 0;
+    }
+
+    .form-control {
+      border-radius: 0.5rem;
+      border-color: #ddd;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 0.25rem rgba(74, 144, 226, 0.25);
+      border-color: var(--primary-color);
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+      background-color: #3b7ad1;
+      border-color: #3b7ad1;
+    }
+
+    .btn-warning {
+      background-color: #F8B400;
+      border-color: #F8B400;
+    }
+
+    .btn-warning:hover {
+      background-color: #d19700;
+      border-color: #d19700;
+    }
+    
+    .btn-info {
+      background-color: #1abc9c;
+      border-color: #1abc9c;
+    }
+
+    .btn-info:hover {
+      background-color: #159b7d;
+      border-color: #159b7d;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+    
+    .btn-success:hover {
+      background-color: #218838;
+      border-color: #218838;
+    }
+    
+    .btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+      border-color: #c82333;
+    }
+    
+    .btn-save-custom {
+      background-color: #8E44AD;
+      border-color: #8E44AD;
+      color: white;
+    }
+    
+    .btn-save-custom:hover {
+      background-color: #6c3483;
+      border-color: #6c3483;
+    }
+
+    img#preview {
+      width: 100%;
+      max-height: 250px;
+      object-fit: contain;
+      margin: 20px auto;
+      display: none;
+      border-radius: 1rem;
+      box-shadow: var(--box-shadow-medium);
+      background-color: var(--background-light);
+      padding: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .produk-item {
+      padding: 15px;
+      background: var(--background-light);
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: var(--box-shadow-light);
+    }
+    
+    .produk-item strong {
+      color: var(--primary-color);
+    }
+
+    .modal-content {
+      border-radius: 1rem;
+    }
+
+    .table th {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .pagination .page-link {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+      border-radius: 0.5rem;
+      margin: 0 4px;
+    }
+    
+    .pagination .page-item.active .page-link {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    footer {
+      background: var(--text-dark);
+      color: var(--background-light);
+      padding: 1rem;
+      text-align: center;
+      margin-top: auto;
+      font-size: 0.9rem;
+    }
+
+    footer .footer-links a {
+      color: var(--background-light);
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    footer .footer-links a:hover {
+      color: var(--secondary-color);
+    }
+    
+    .nav-link {
+      font-weight: 500;
+      text-transform: uppercase;
     }
     .container {
       background: rgba(255, 255, 255, 0.95);
@@ -73,116 +332,189 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="row">
-      <!-- Chatbot & Barcode -->
-      <div class="col-md-4 mb-4 mb-md-0 d-flex flex-column gap-3">
-        <div class="card w-100">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart-icon lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        KelontongKu
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid py-5">
+    <div class="row g-4">
+      <div class="col-md-4 d-flex flex-column gap-4">
+        <div class="card h-100">
           <div class="card-body">
-            <h5 class="card-title text-center">Chatbot AI</h5>
+            <h5 class="card-title text-center">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-message-square-icon lucide-bot-message-square"><path d="M12 6V2H8"/><path d="M15 11v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M20 16a2 2 0 0 1-2 2H8.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 4 20.286V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9 11v2"/></svg>              Chatbot AI</h5>
             <div id="chatMessages" class="chat-box"></div>
-            <input type="text" id="chatInput" class="form-control mt-2" placeholder="Tanya harga atau fitur..." onkeydown="if(event.key==='Enter') sendChat()" />
-            <button class="btn btn-primary mt-2 w-100" onclick="sendChat()">Kirim</button>
+            <input type="text" id="chatInput" class="form-control mt-3" placeholder="Tanya harga atau fitur..." onkeydown="if(event.key==='Enter') sendChat()" />
+            <button class="btn btn-primary mt-3 w-100" onclick="sendChat()">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-icon lucide-send"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
+              Kirim</button>
           </div>
         </div>
-        <!-- Input Barcode Open Food Facts -->
-        <div class="card w-100">
+        <div class="card">
           <div class="card-body">
-            <h5 class="card-title text-center">Input Barcode Produk</h5>
-            <p class="text-center">Catatan : Hanya untuk Produk Makanan</p>
+            <h5 class="card-title text-center">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-text-cursor-input-icon lucide-text-cursor-input"><path d="M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6"/><path d="M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7"/><path d="M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1"/><path d="M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1"/><path d="M9 6v12"/></svg>
+              Input Barcode Produk</h5>
+            <p class="text-center text-muted"><small>Catatan : Hanya untuk Produk Makanan</small></p>
             <input type="text" id="barcodeInputOFF" class="form-control mb-2" placeholder="Scan atau ketik barcode..." onkeydown="if(event.key==='Enter') fetchBarcodeOFF()" />
             <button class="btn btn-warning w-100" onclick="fetchBarcodeOFF()">Ambil Data Produk</button>
           </div>
         </div>
       </div>
-      <!-- OCR Produk Scanner -->
-      <div class="col-md-4 mb-4 mb-md-0">
-        <h1 class="text-center mb-4">OCR Produk Scanner</h1>
-        <div class="mb-2 d-flex gap-2">
-          <button class="btn btn-outline-primary flex-fill" type="button" onclick="chooseFile()">Pilih File</button>
-          <button class="btn btn-outline-secondary flex-fill" type="button" onclick="openCamera()">Kamera</button>
-        </div>
-        <input type="file" accept="image/*" id="imageInput" class="form-control mb-2" style="display:none" />
-        <video id="cameraStream" width="100%" style="display:none; border-radius:12px; margin-bottom:10px;" autoplay></video>
-        <canvas id="cameraCanvas" style="display:none;"></canvas>
-        <button id="captureBtn" class="btn btn-success w-100 mb-2" style="display:none" type="button" onclick="capturePhoto()">Ambil Foto</button>
-        <img id="preview" src="#" alt="Preview" />
-        <button class="btn btn-success w-100 mb-3" onclick="sendToOCR()">Proses OCR</button>
-        <div id="result" style="display: none;">
-          <label for="namaProduk">Nama Produk</label>
-          <input type="text" id="namaProduk" class="form-control" />
-          <label for="hargaBeli">Harga Beli</label>
-          <input type="number" id="hargaBeli" class="form-control" />
-          <label for="hargaJual">Harga Jual</label>
-          <input type="number" id="hargaJual" class="form-control" />
-          <label for="barcode">Barcode</label>
-          <input type="text" id="barcode" class="form-control" />
-          <div class="button-group">
-            <button onclick="saveData()">Simpan</button>
-            <button class="cancel" onclick="cancelData()">Batal</button>
+      <div class="col-md-4">
+        <div class="card h-100 p-4">
+          <h1 class="text-center mb-4">OCR Produk Scanner</h1>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-outline-primary flex-fill" type="button" onclick="chooseFile()">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-icon lucide-file"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+              Pilih File</button>
+            <button class="btn btn-outline-secondary flex-fill" type="button" onclick="openCamera()">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera-icon lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              Kamera</button>
           </div>
-        </div>
-        <div id="editModal" style="display: none; margin-top: 30px;">
-          <h2>Edit Produk</h2>
-          <label for="editNama">Nama Produk</label>
-          <input type="text" id="editNama" class="form-control" />
-          <label for="editBeli">Harga Beli</label>
-          <input type="number" id="editBeli" class="form-control" />
-          <label for="editJual">Harga Jual</label>
-          <input type="number" id="editJual" class="form-control" />
-          <label for="editBarcode">Barcode</label>
-          <input type="text" id="editBarcode" class="form-control" />
-          <div class="button-group">
-            <button onclick="submitEdit()">Simpan Perubahan</button>
-            <button class="cancel" onclick="cancelEdit()">Batal</button>
+          <input type="file" accept="image/*" id="imageInput" class="form-control mb-2" style="display:none" />
+          <video id="cameraStream" width="100%" style="display:none; border-radius:1rem; margin-bottom:1rem;" autoplay></video>
+          <canvas id="cameraCanvas" style="display:none;"></canvas>
+          <button id="captureBtn" class="btn btn-success w-100 mb-3" style="display:none" type="button" onclick="capturePhoto()">Ambil Foto</button>
+          <img id="preview" src="#" alt="Preview" />
+          <button class="btn btn-success w-100 mb-3" onclick="sendToOCR()">Proses OCR</button>
+          <div id="result" style="display: none;">
+            <div class="mb-3">
+              <label for="namaProduk" class="form-label">Nama Produk</label>
+              <input type="text" id="namaProduk" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="hargaBeli" class="form-label">Harga Beli</label>
+              <input type="number" id="hargaBeli" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="hargaJual" class="form-label">Harga Jual</label>
+              <input type="number" id="hargaJual" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="barcode" class="form-label">Barcode</label>
+              <input type="text" id="barcode" class="form-control" />
+            </div>
+            <div class="button-group">
+              <button onclick="saveData()" class="btn btn-primary">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save-icon lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>
+                Simpan</button>
+              <button class="btn btn-danger" onclick="cancelData()">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                Batal</button>
+            </div>
+          </div>
+          <div id="editModal" style="display: none; margin-top: 30px;">
+            <h2 class="card-title">Edit Produk</h2>
+            <div class="mb-3">
+              <label for="editNama" class="form-label">Nama Produk</label>
+              <input type="text" id="editNama" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="editBeli" class="form-label">Harga Beli</label>
+              <input type="number" id="editBeli" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="editJual" class="form-label">Harga Jual</label>
+              <input type="number" id="editJual" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="editBarcode" class="form-label">Barcode</label>
+              <input type="text" id="editBarcode" class="form-control" />
+            </div>
+            <div class="button-group">
+              <button onclick="submitEdit()" class="btn btn-primary">Simpan Perubahan</button>
+              <button class="btn btn-danger" onclick="cancelEdit()">Batal</button>
+            </div>
           </div>
         </div>
       </div>
-      <!-- Export & Daftar Produk -->
-      <div class="col-md-4 d-flex align-items-start">
-        <div class="w-100">
-          <!-- Tambahkan tombol Pusat Informasi di sini -->
-          <button class="btn btn-info w-100 mb-3" onclick="showInfo()">Pusat Informasi</button>
-          <div class="card mb-4">
-            <div class="card-body">
-              <h5 class="card-title">Export Data</h5>
-              <div class="d-grid gap-2">
-                <a href="/export/json" class="btn btn-success" target="_blank">Export ke JSON</a>
-                <a href="/export/csv" class="btn btn-success" target="_blank">Export ke CSV</a>
-                <a href="/export/excel" class="btn btn-success" target="_blank">Export ke Excel</a>
-                <a href="/api/produk" class="btn btn-outline-primary" target="_blank">Lihat API JSON</a>
-              </div>
+      <div class="col-md-4 d-flex flex-column gap-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-icon lucide-bell"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+              Pusat Informasi & Export</h5>
+            <button class="btn btn-info w-100 mb-3" onclick="showInfo()">Pusat Informasi</button>
+            <h6 class="text-center text-muted">Export Data</h6>
+            <div class="d-grid gap-2">
+              <a href="/export/json" class="btn btn-success" target="_blank">Export ke JSON</a>
+              <a href="/export/csv" class="btn btn-success" target="_blank">Export ke CSV</a>
+              <a href="/export/excel" class="btn btn-success" target="_blank">Export ke Excel</a>
+              <a href="/api/produk" class="btn btn-outline-primary" target="_blank">Lihat API JSON</a>
             </div>
           </div>
-          <h2 class="text-center">Daftar Produk Tersimpan</h2>
-          <div id="produkList"></div>
-          <button id="lihatSemuaBtn" class="btn btn-primary w-100 mt-2" style="display:none" onclick="showAllProduk()">Lihat Semua</button>
-
-          <!-- Modal Bootstrap untuk daftar produk lengkap -->
-          <div class="modal fade" id="allProdukModal" tabindex="-1" aria-labelledby="allProdukModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="allProdukModalLabel">Semua Produk Tersimpan</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                </div>
-                <div class="modal-body">
-                  <input type="text" id="searchProduk" class="form-control mb-3" placeholder="Cari nama/barcode produk..." oninput="filterProdukTable()" />
-                  <div id="allProdukList"></div>
-                  <nav>
-                    <ul class="pagination justify-content-center mt-3" id="produkPagination"></ul>
-                  </nav>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                </div>
-              </div>
-            </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title text-center">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-properties-icon lucide-table-properties"><path d="M15 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
+              Daftar Produk Tersimpan</h5>
+            <div id="produkList"></div>
+            <button id="lihatSemuaBtn" class="btn btn-primary w-100 mt-3" style="display:none" onclick="showAllProduk()">Lihat Semua</button>
           </div>
         </div>
       </div>
     </div>
   </div>
+  
+  <div class="modal fade" id="allProdukModal" tabindex="-1" aria-labelledby="allProdukModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="allProdukModalLabel">Semua Produk Tersimpan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+  <div class="position-relative mb-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+         fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round"
+         style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#888; pointer-events:none;">
+      <path d="m21 21-4.34-4.34"/>
+      <circle cx="11" cy="11" r="8"/>
+    </svg>
+
+    <input type="text" id="searchProduk" 
+           class="form-control ps-5" 
+           placeholder="Cari nama/barcode produk..." 
+           oninput="filterProdukTable()" />
+  </div>
+
+  <div id="allProdukList"></div>
+
+  <nav>
+    <ul class="pagination justify-content-center mt-3" id="produkPagination"></ul>
+  </nav>
+</div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="container-fluid">
+      <div class="footer-links mb-3">
+        <a href="#">About</a>
+        <a href="#">FAQ</a>
+        <a href="#">Contact Us</a>
+      </div>
+      <p class="m-0">&copy; 2025 Anafsi Project. All rights reserved.</p>
+    </div>
+  </footer>
   <!-- Script gabungan -->
   <script>
     // Chatbot

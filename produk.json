@@ -14,5 +14,15 @@
         "hargaBeli": "32000",
         "hargaJual": "39000",
         "stok": "10"
+    },
+    {
+        "nama": "LEAG AD CAMPUS KOVEEDIE",
+        "kategori": "buku",
+        "barcode": "BR301750",
+        "variant": "ok",
+        "brand": "campus",
+        "hargaBeli": "1550000",
+        "hargaJual": "1850000",
+        "stok": "10"
     }
 ]

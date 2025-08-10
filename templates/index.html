@@ -421,12 +421,28 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
         <div class="modal-body">
-          <input type="text" id="searchProduk" class="form-control mb-3" placeholder="Cari nama/barcode produk..." oninput="filterProdukTable()" />
-          <div id="allProdukList"></div>
-          <nav>
-            <ul class="pagination justify-content-center mt-3" id="produkPagination"></ul>
-          </nav>
-        </div>
+  <div class="position-relative mb-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+         fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round"
+         style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#888; pointer-events:none;">
+      <path d="m21 21-4.34-4.34"/>
+      <circle cx="11" cy="11" r="8"/>
+    </svg>
+
+    <input type="text" id="searchProduk" 
+           class="form-control ps-5" 
+           placeholder="Cari nama/barcode produk..." 
+           oninput="filterProdukTable()" />
+  </div>
+
+  <div id="allProdukList"></div>
+
+  <nav>
+    <ul class="pagination justify-content-center mt-3" id="produkPagination"></ul>
+  </nav>
+</div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
         </div>

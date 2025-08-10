@@ -15,7 +15,7 @@ import easyocr
 import numpy as np
 
 # 🔐 Ganti dengan API Key Gemini
-GEMINI_API_KEY = "AIzaSyA88MN3DtkhqapsjTmNhEoE92n9GAdWBTI"
+GEMINI_API_KEY = "AIzaSyAyr6hBJPs0oi9EqYZakphFIel-3X1d3fQ"
 genai.configure(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
@@ -399,12 +399,22 @@ def get_barcode_for_product(nama_produk):
     return "BR" + str(random.randint(100000, 999999))
 
 def ocr_with_n8n(image_base64):
+    """Kirim gambar ke n8n dalam format file asli (JPG/PNG), bukan base64"""
     try:
         url = "https://mastah.app.n8n.cloud/webhook-test/waan"
-        payload = {"image": image_base64}
-        resp = requests.post(url, json=payload, timeout=15)
+        
+        # Decode base64 ke bytes
+        image_bytes = base64.b64decode(image_base64)
+        
+        # Kirim sebagai multipart/form-data dengan file binary
+        files = {
+            'image': ('image.jpg', BytesIO(image_bytes), 'image/jpeg')
+        }
+        
+        resp = requests.post(url, files=files, timeout=15)
         resp.raise_for_status()
         result = resp.json()
+        
         # Asumsikan n8n mengembalikan {"text": "hasil ocr"}
         text = result.get("text", "")
         if text:
@@ -420,26 +430,86 @@ def ocr_form():
         # Ambil file gambar dari form-data
         if 'image' not in request.files:
             return jsonify({"error": "No image file provided"}), 400
+            
         image_file = request.files['image']
+        
+        if image_file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+
+        # Baca file ke memory dan reset pointer
+        image_file.seek(0)
+        file_content = image_file.read()
+        
+        # Debug info
+        print(f"File size: {len(file_content)} bytes")
+        print(f"Filename: {image_file.filename}")
+        print(f"Content type: {image_file.mimetype}")
 
         n8n_webhook_url = "https://mastah.app.n8n.cloud/webhook-test/waan"
+        
+        # Kirim file asli dalam format binary (JPG/PNG)
         files = {
-            "image": (image_file.filename, image_file.stream, image_file.mimetype)
+            'image': (image_file.filename, file_content, image_file.mimetype or 'image/jpeg')
         }
 
-        resp = requests.post(n8n_webhook_url, files=files)
+        resp = requests.post(n8n_webhook_url, files=files, timeout=30)
+        
+        print(f"n8n response status: {resp.status_code}")
+        print(f"n8n response: {resp.text}")
 
         if resp.status_code == 200:
-            resp_json = resp.json()
-            return jsonify(resp_json)
+            try:
+                resp_json = resp.json()
+                return jsonify(resp_json)
+            except json.JSONDecodeError:
+                return jsonify({
+                    "error": "Invalid JSON response from n8n",
+                    "response": resp.text[:500]
+                }), 500
         else:
             return jsonify({
                 "error": f"Webhook n8n gagal, status: {resp.status_code}",
-                "detail": resp.text
+                "detail": resp.text[:500]
             }), 500
 
+    except Exception as e:
+        print(f"OCR Form error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/test-n8n-file', methods=['POST'])
+def test_n8n_file():
+    """Test mengirim file gambar ke n8n dalam format asli"""
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file"}), 400
+            
+        image_file = request.files['image']
+        
+        # Baca file
+        image_file.seek(0)
+        file_content = image_file.read()
+        
+        # Test kirim ke n8n
+        url = "https://mastah.app.n8n.cloud/webhook-test/waan"
+        files = {
+            'image': (image_file.filename, file_content, image_file.mimetype)
+        }
+        
+        resp = requests.post(url, files=files, timeout=15)
+        
+        return jsonify({
+            "status": resp.status_code,
+            "response": resp.text,
+            "headers": dict(resp.headers),
+            "file_info": {
+                "filename": image_file.filename,
+                "size": len(file_content),
+                "mimetype": image_file.mimetype
+            }
+        })
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

@@ -1,26 +1,18 @@
 [
     {
         "nama": "Snack Soes Cokelat",
-        "hargaBeli": "12036",
-        "hargaJual": "1732",
-        "barcode": "BR327581"
-    },
-    {
-        "nama": "Snack Soes Cokelat",
         "hargaBeli": "9684",
         "hargaJual": "28047",
         "barcode": "BR181032"
     },
     {
-        "nama": "Snack Soes Cokelat",
-        "hargaBeli": "11206",
-        "hargaJual": "20320",
-        "barcode": "BR942474"
-    },
-    {
-        "nama": "Perly",
-        "hargaBeli": "10000",
-        "hargaJual": "12000",
-        "barcode": "6111242100992"
+        "nama": "sidiali EAU MIN\u00c9RALE NAT FUr: ! De bien-Etre Source",
+        "kategori": "minuman",
+        "barcode": "1090732489",
+        "variant": "ok",
+        "brand": "daw",
+        "hargaBeli": "32000",
+        "hargaJual": "39000",
+        "stok": "10"
     }
 ]

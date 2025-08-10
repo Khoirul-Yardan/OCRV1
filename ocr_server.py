@@ -149,9 +149,12 @@ def ocr():
     image_base64 = data['image'].split(',')[1]
     image = Image.open(io.BytesIO(base64.b64decode(image_base64)))
 
-    # 1. Coba EasyOCR dulu
-    nama_produk = ocr_with_easyocr(image)
-    # 2. Jika gagal, fallback ke Tesseract (tanpa whitelist)
+    # 1. Coba n8n dulu
+    nama_produk = ocr_with_n8n(image_base64)
+    # 2. Jika gagal, fallback ke EasyOCR
+    if not nama_produk:
+        nama_produk = ocr_with_easyocr(image)
+    # 3. Jika masih gagal, fallback ke Tesseract
     if not nama_produk:
         image = preprocess_image(image)
         text = ocr_with_tesseract(image)
@@ -240,13 +243,64 @@ def export_csv():
     except:
         data = []
 
+    headers = [
+        "Internal ID Variant (Do Not Edit)", "Category", "SKU", "Items Name (Do Not Edit)",
+        "ecommerce item? (Yes/No)", "Pre-order ? (Yes/No)", "Processing days", "Weight (gm)",
+        "Length (cm)", "Width (cm)", "Height (cm)", "Condition", "Brand Name", "Variant name",
+        "Basic - Price", "Image 1 (for Online Store)", "Image 2 (for Online Store)", "Image 3 (for Online Store)",
+        "Image 4 (for Online Store)", "Image 5 (for Online Store)", "Image 6 (for Online Store)",
+        "Image 7 (for Online Store)", "Image 8 (for Online Store)", "Image 9 (for Online Store)",
+        "Image 10 (for Online Store)", "Image 11 (for Online Store)", "Image 12 (for Online Store)",
+        "In Stock", "Track Stock", "Track Alert", "Stock Alert", "Track Cost", "Cost Amount"
+    ]
+
     si = StringIO()
-    writer = csv.DictWriter(si, fieldnames=["nama", "hargaBeli", "hargaJual", "barcode"])
-    writer.writeheader()
-    writer.writerows(data)
+    writer = csv.writer(si)
+    writer.writerow(headers)
+
+    for idx, p in enumerate(data):
+        # --- Ambil data dari form MokaPos jika ada, fallback ke default ---
+        kategori = p.get("kategori", "General")
+        sku = p.get("barcode", f"SKU{idx+1:06d}")
+        nama = p.get("nama", f"Produk {idx+1}")
+        variant_name = p.get("variant", "").strip() or nama or "Default"
+        brand = p.get("brand", "BrandA")
+        harga_jual = p.get("hargaJual", 10000)
+        harga_beli = p.get("hargaBeli", 8000)
+        stok = p.get("stok", 10)
+        try:
+            stok = int(stok)
+        except:
+            stok = 10
+
+        row = [
+            idx + 1,              # Internal ID Variant (Do Not Edit)
+            kategori,             # Category
+            sku,                  # SKU
+            nama,                 # Items Name (Do Not Edit)
+            "Yes",                # ecommerce item? (Yes/No)
+            "No",                 # Pre-order ? (Yes/No)
+            1,                    # Processing days
+            100,                  # Weight (gm)
+            10,                   # Length (cm)
+            10,                   # Width (cm)
+            10,                   # Height (cm)
+            "New",                # Condition
+            brand,                # Brand Name
+            variant_name,         # Variant name
+            harga_jual,           # Basic - Price
+            "", "", "", "", "", "", "", "", "", "", "", "",  # Image 1-12
+            stok,                 # In Stock (wajib angka)
+            "Yes",                # Track Stock
+            "No",                 # Track Alert
+            5,                    # Stock Alert
+            "No",                 # Track Cost
+            harga_beli            # Cost Amount
+        ]
+        writer.writerow(row)
 
     output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=produk.csv"
+    output.headers["Content-Disposition"] = "attachment; filename=produk_mokapos.csv"
     output.headers["Content-type"] = "text/csv"
     return output
 
@@ -308,9 +362,12 @@ def chat_image():
     daerah = data.get('daerah', 'Jakarta')
     image = Image.open(io.BytesIO(base64.b64decode(image_base64)))
 
-    # 1. Coba EasyOCR dulu
-    nama_produk = ocr_with_easyocr(image)
-    # 2. Jika gagal, fallback ke Tesseract
+    # 1. Coba n8n dulu
+    nama_produk = ocr_with_n8n(image_base64)
+    # 2. Jika gagal, fallback ke EasyOCR
+    if not nama_produk:
+        nama_produk = ocr_with_easyocr(image)
+    # 3. Jika masih gagal, fallback ke Tesseract
     if not nama_produk:
         image = preprocess_image(image)
         text = ocr_with_tesseract(image)
@@ -340,6 +397,49 @@ def get_barcode_for_product(nama_produk):
         print("Barcode OFF error:", e)
     # Jika tidak ditemukan, pakai template
     return "BR" + str(random.randint(100000, 999999))
+
+def ocr_with_n8n(image_base64):
+    try:
+        url = "https://mastah.app.n8n.cloud/webhook-test/waan"
+        payload = {"image": image_base64}
+        resp = requests.post(url, json=payload, timeout=15)
+        resp.raise_for_status()
+        result = resp.json()
+        # Asumsikan n8n mengembalikan {"text": "hasil ocr"}
+        text = result.get("text", "")
+        if text:
+            return extract_best_line(text)
+        return None
+    except Exception as e:
+        print("n8n OCR error:", e)
+        return None
+
+@app.route('/ocr-form', methods=['POST'])
+def ocr_form():
+    try:
+        # Ambil file gambar dari form-data
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+        image_file = request.files['image']
+
+        n8n_webhook_url = "https://mastah.app.n8n.cloud/webhook-test/waan"
+        files = {
+            "image": (image_file.filename, image_file.stream, image_file.mimetype)
+        }
+
+        resp = requests.post(n8n_webhook_url, files=files)
+
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            return jsonify(resp_json)
+        else:
+            return jsonify({
+                "error": f"Webhook n8n gagal, status: {resp.status_code}",
+                "detail": resp.text
+            }), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
